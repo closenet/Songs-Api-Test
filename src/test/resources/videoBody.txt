@@ -1,0 +1,5 @@
+{
+  "artist": "Lady Gaga",
+  "song": "Poker face",
+  "publishDate": "2017-09-01"
+}

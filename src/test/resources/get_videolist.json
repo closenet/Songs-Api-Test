@@ -1,0 +1,16 @@
+{
+  "_id": "596cbda86ed7c10011a68b24",
+  "artist": "Lady Gaga",
+  "song": "Poker face",
+  "publishDate": "2017-09-01T00:00:00.000Z",
+  "__v": 0,
+  "date_created": "2017-07-17T13:37:44.559Z"
+},
+{
+"_id": "596cc3b16ed7c10011a68b26",
+"artist": "Ed Sheeran",
+"song": "Galway Girl",
+"publishDate": "2013-02-01T00:00:00.000Z",
+"__v": 0,
+"date_created": "2017-07-17T14:03:29.649Z"
+}
