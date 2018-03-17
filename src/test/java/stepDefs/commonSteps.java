@@ -17,12 +17,12 @@ public class commonSteps {
     fluentHcApi songsApi = new fluentHcApi();
     HttpResponse response = null;
 
-    @Given("^endpoint path (/\\w+)")
+    @Given("^endpoint path (/\\w+/\\w+|/\\w+)")
     public void endpointPathVideo(String resourcesName) throws Throwable {
         songsApi.setResource(resourcesName);
     }
 
-    @And("^using (POST|GET|PUT|DELETE) method$")
+    @And("^using (POST|GET|PATCH|DELETE) method$")
     public void aRequestSentToTheVideoEndpoint(String verb) throws Throwable {
 
         songsApi.setVerb(verb);
@@ -42,19 +42,23 @@ public class commonSteps {
     }
 
 
-    @Then("^response status equals to (\\d+)$")
+    @Then("^response status (\\d+)$")
     public void responseStatusEquals(int statusCode) throws Throwable {
         songsApi.verifyStatusCode(statusCode);
     }
 
-    @And("^response body equal to (.*\\.json)$")
-    public void responseBodyEqualToGet_videoJson(String filename) throws Throwable {
-        songsApi.verifybody(filename);
+    @And("^response body equal to (.*\\.json) file$")
+    public void responseBodyEqualToJsonFile(String filename) throws Throwable {
+        songsApi.verifyFullBodyMsg(filename);
+    }
+    @And("^response body equal to (.*) message$")
+    public void responseBodyEqualToMsg(String expectedMsg) throws Throwable {
+        songsApi.verifyErrMsg(expectedMsg);
     }
 
-    @And("^content header equals to application/json$")
-    public void contentHeaderEqualsToApplicationJson() throws Throwable {
-        songsApi.verifyContentType();
+    @And("^header (\\w+-\\w+|\\w+) equals to (\\w+/\\w+|\\w+)$")
+    public void contentHeaderEqualsToApplicationJson(String headerName, String headerValue) throws Throwable {
+        songsApi.verifyHeader(headerName, headerValue);
 
     }
 }

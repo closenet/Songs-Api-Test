@@ -1,33 +1,72 @@
 package Utils;
 
-
+import org.apache.http.HeaderIterator;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.ContentType;
 import org.apache.http.util.EntityUtils;
+import org.assertj.core.api.Assert;
+import org.assertj.core.util.VisibleForTesting;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.skyscreamer.jsonassert.JSONAssert;
-import org.json.simple.parser.JSONParser;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class fluentHcApi {
 
     String baseUrl = "http://turing.niallbunting.com:3003/api";
-
+    HttpResponse response = null;
     String resourceName = null;
     String body = null;
     String verb = null;
     String responseBody = null;
     int statusCode;
     String contentType = null;
+    String headerName = null;
+    String headerValue = null;
+    HeaderIterator headerIt = null;
+    String reasonPhrase = null;
+
+
+
+
+    public void setHttpResponse(HttpResponse Response) {
+        this.response = Response;
+    }
+
+
+    public void setReasonPhrase(String ReasonPhrase) {
+        this.reasonPhrase = ReasonPhrase;
+    }
+
+
+    public void setHeaderIt(HeaderIterator HeaderIt) {
+        this.headerIt = HeaderIt;
+    }
+
+
+    public void setHeaderName(String HeaderName) {
+        this.headerName = HeaderName;
+    }
+
+    public void setHeaderValue(String HeaderValue) {
+        this.headerValue = HeaderValue;
+    }
+
 
     public int StatusCode() {
         return this.statusCode;
@@ -50,7 +89,9 @@ public class fluentHcApi {
         this.responseBody = res;
     }
 
-    public void setContentType(String ContentType) {this.contentType = ContentType;}
+    public void setContentType(String ContentType) {
+        this.contentType = ContentType;
+    }
 
 
     public HttpResponse baseRequest() throws IOException {
@@ -66,11 +107,10 @@ public class fluentHcApi {
                     .bodyString(this.body, ContentType.APPLICATION_JSON)
                     .execute()
                     .returnResponse();
-        } else if (this.verb.equals("PUT")) {
-            return Request.Put(this.baseUrl + this.resourceName)
+        } else if (this.verb.equals("PATCH")) {
+            return Request.Patch(this.baseUrl + this.resourceName)
                     .useExpectContinue()
                     .version(HttpVersion.HTTP_1_1)
-                    .bodyString(this.body, ContentType.APPLICATION_JSON)
                     .execute()
                     .returnResponse();
         } else {
@@ -80,42 +120,62 @@ public class fluentHcApi {
         }
     }
 
-    public void establishRequest() throws IOException {
+    public void establishRequest() throws HttpHostConnectException, NullPointerException, IOException, NoHttpResponseException {
 
-        this.responseBody = EntityUtils.toString(this.baseRequest().getEntity());
-        this.statusCode = this.baseRequest().getStatusLine().getStatusCode();
-        this.contentType = this.baseRequest().getFirstHeader("Content-Type").getValue();
+        try {
+            this.response = this.baseRequest();
 
-
-        System.out.println("#######STATUS#########   " + this.statusCode);
-        System.out.println("#######BODY#########   " + this.responseBody);
-        System.out.println("#######HEADER#########   " + this.contentType);
-
+            this.responseBody = EntityUtils.toString(response.getEntity());
+            this.statusCode = response.getStatusLine().getStatusCode();
+            this.headerIt = this.response.headerIterator();
+           this.reasonPhrase = this.response.getStatusLine().getReasonPhrase();
+        }
+        catch (HttpHostConnectException ex)
+        {
+           ex.getMessage();
+        }
     }
 
 
-    public void verifyStatusCode(int status) throws IOException, ParseException, JSONException {
-
+    public void verifyStatusCode(int status) throws IOException, JSONException {
         assertThat(status).isEqualTo(this.statusCode);
-
     }
 
-    public void verifyContentType() throws IOException, ParseException, JSONException {
-
-        assertThat("application/json; charset=utf-8").isEqualTo(this.contentType);
-
+    public void setHeaderNameAndValue(String expectedHeader) {
+        for (int i = 0; i >= this.response.getAllHeaders().length; i++) {
+            if (this.headerIt.nextHeader().getName().equals(expectedHeader)) {
+                this.headerName = this.headerIt.nextHeader().getName();
+                this.headerValue = this.headerIt.nextHeader().getValue();
+            } else {
+                this.headerIt.next();
+            }
+        }
     }
 
-    public void verifybody(String filename) throws IOException, ParseException, JSONException {
+    public void verifyHeader(String HeaderName, String HeaderValue) throws IOException, JSONException {
+        this.setHeaderNameAndValue(HeaderName);
+        assertThat(this.headerName).isEqualTo(headerName);
+        assertThat(this.headerValue).isEqualTo(headerValue);
+    }
 
-        JSONParser parser = new JSONParser();
 
-        Object obj = parser.parse(new FileReader("./src/test/resources/" + filename));
-        String expected = obj.toString();
-        String actual = this.responseBody.toString();
+    public void verifyFullBodyMsg(String expectedFileName) throws IOException, JSONException, ParseException {
+        String expected = this.readExpectedFile(expectedFileName);
+        String actual = this.responseBody;
         JSONAssert.assertEquals(expected, actual, false);
-
     }
 
+    public void verifyBodyMsg(String expectedMsg) throws IOException, JSONException, ParseException {
+        String actual = this.responseBody;
+        JSONAssert.assertEquals(expectedMsg, actual, false);
+    }
 
+    static String readExpectedFile(String expectedResponseFile) throws IOException {
+        byte[] encoded = Files.readAllBytes(Paths.get("./src/test/resources/" + expectedResponseFile));
+        return new String(encoded, StandardCharsets.UTF_8);
+    }
+
+    public void verifyErrMsg (String errMsg) throws JSONException {
+        assertThat(errMsg).isEqualTo(this.reasonPhrase);
+    }
 }
