@@ -26,7 +26,7 @@ public class commonSteps {
     public void aRequestSentToTheVideoEndpoint(String verb) throws Throwable {
 
         songsApi.setVerb(verb);
-      //  System.out.println("##################R###    " + resourceName);
+        //  System.out.println("##################R###    " + resourceName);
 
     }
 
@@ -38,16 +38,23 @@ public class commonSteps {
 
     @When("^a service request is established$")
     public void theServiceRequestIsEstablished() throws Throwable {
-
         songsApi.establishRequest();
-
     }
 
 
     @Then("^response status equals to (\\d+)$")
-    public void responseStatusEquals(int arg0) throws Throwable {
+    public void responseStatusEquals(int statusCode) throws Throwable {
+        songsApi.verifyStatusCode(statusCode);
+    }
 
+    @And("^response body equal to (.*\\.json)$")
+    public void responseBodyEqualToGet_videoJson(String filename) throws Throwable {
+        songsApi.verifybody(filename);
+    }
 
-        songsApi.StatusCode();
+    @And("^content header equals to application/json$")
+    public void contentHeaderEqualsToApplicationJson() throws Throwable {
+        songsApi.verifyContentType();
+
     }
 }
