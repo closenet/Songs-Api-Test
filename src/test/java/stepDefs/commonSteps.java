@@ -59,6 +59,12 @@ public class commonSteps {
     @And("^header (\\w+-\\w+|\\w+) equals to (\\w+/\\w+|\\w+)$")
     public void contentHeaderEqualsToApplicationJson(String headerName, String headerValue) throws Throwable {
         songsApi.verifyHeader(headerName, headerValue);
+    }
+
+    @And("^response body contains$")
+    public void responseBodyContains(String jsonContent) throws Throwable {
+        // Write code here that turns the phrase above into concrete actions
+        songsApi.verifyBodyMsg(jsonContent);
 
     }
 }

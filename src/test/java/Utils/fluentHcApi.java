@@ -17,6 +17,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -40,8 +41,6 @@ public class fluentHcApi {
     String headerValue = null;
     HeaderIterator headerIt = null;
     String reasonPhrase = null;
-
-
 
 
     public void setHttpResponse(HttpResponse Response) {
@@ -68,10 +67,9 @@ public class fluentHcApi {
     }
 
 
-    public int StatusCode() {
-        return this.statusCode;
+    public void setStatusCode(int StatusCode) {
+        this.statusCode = StatusCode;
     }
-
 
     public void setResource(String ResourceName) {
         this.resourceName = ResourceName;
@@ -94,45 +92,63 @@ public class fluentHcApi {
     }
 
 
-    public HttpResponse baseRequest() throws IOException {
-
-        if (this.verb.equals("GET")) {
-            return Request.Get(this.baseUrl + this.resourceName)
-                    .execute()
-                    .returnResponse();
-        } else if (this.verb.equals("POST")) {
-            return Request.Post(this.baseUrl + this.resourceName)
-                    .useExpectContinue()
-                    .version(HttpVersion.HTTP_1_1)
-                    .bodyString(this.body, ContentType.APPLICATION_JSON)
-                    .execute()
-                    .returnResponse();
-        } else if (this.verb.equals("PATCH")) {
-            return Request.Patch(this.baseUrl + this.resourceName)
-                    .useExpectContinue()
-                    .version(HttpVersion.HTTP_1_1)
-                    .execute()
-                    .returnResponse();
-        } else {
-            return Request.Delete(this.baseUrl + this.resourceName)
-                    .execute()
-                    .returnResponse();
-        }
-    }
-
-    public void establishRequest() throws HttpHostConnectException, NullPointerException, IOException, NoHttpResponseException {
+    public HttpResponse baseRequest() throws IOException, HttpHostConnectException {
 
         try {
-            this.response = this.baseRequest();
-
-            this.responseBody = EntityUtils.toString(response.getEntity());
-            this.statusCode = response.getStatusLine().getStatusCode();
-            this.headerIt = this.response.headerIterator();
-           this.reasonPhrase = this.response.getStatusLine().getReasonPhrase();
+            if (this.verb.equals("GET")) {
+                return Request.Get(this.baseUrl + this.resourceName)
+                        .execute()
+                        .returnResponse();
+            } else if (this.verb.equals("POST")) {
+                return Request.Post(this.baseUrl + this.resourceName)
+                        .useExpectContinue()
+                        .version(HttpVersion.HTTP_1_1)
+                        .bodyString(this.body, ContentType.APPLICATION_JSON)
+                        .execute()
+                        .returnResponse();
+            } else if (this.verb.equals("PATCH") && this.body != null) {
+                return Request.Patch(this.baseUrl + this.resourceName)
+                        .useExpectContinue()
+                        .version(HttpVersion.HTTP_1_1)
+                        .bodyString(this.body, ContentType.APPLICATION_JSON)
+                        .execute()
+                        .returnResponse();
+            } else if (this.verb.equals("PATCH") && this.body == null) {
+                return Request.Patch(this.baseUrl + this.resourceName)
+                        .useExpectContinue()
+                        .version(HttpVersion.HTTP_1_1)
+                        .execute()
+                        .returnResponse();
+            } else {
+                return Request.Delete(this.baseUrl + this.resourceName)
+                        .execute()
+                        .returnResponse();
+            }
+        } catch (HttpHostConnectException e) {
+            System.out.println("NOTE: record you try to delete is already deleted \n");
+            return this.response;
         }
-        catch (HttpHostConnectException ex)
-        {
-           ex.getMessage();
+
+    }
+
+    public void establishRequest() throws HttpHostConnectException, Exception {
+
+        try {
+            setHttpResponse(this.baseRequest());
+            if (this.response.getEntity() == null) {
+                setStatusCode(this.response.getStatusLine().getStatusCode());
+                setHeaderIt(this.response.headerIterator());
+                setReasonPhrase(this.response.getStatusLine().getReasonPhrase());
+
+            } else {
+                setStatusCode(this.response.getStatusLine().getStatusCode());
+                setHeaderIt(this.response.headerIterator());
+                setReasonPhrase(this.response.getStatusLine().getReasonPhrase());
+                setResponse(EntityUtils.toString(this.response.getEntity()));
+            }
+
+        } catch (Exception e) {
+            System.out.println("NOTE: record you try to delete is already deleted \n");
         }
     }
 
@@ -165,9 +181,9 @@ public class fluentHcApi {
         JSONAssert.assertEquals(expected, actual, false);
     }
 
-    public void verifyBodyMsg(String expectedMsg) throws IOException, JSONException, ParseException {
+    public void verifyBodyMsg(String expectedJson) throws IOException, JSONException, ParseException {
         String actual = this.responseBody;
-        JSONAssert.assertEquals(expectedMsg, actual, false);
+        JSONAssert.assertEquals(expectedJson, actual, false);
     }
 
     static String readExpectedFile(String expectedResponseFile) throws IOException {
@@ -175,7 +191,7 @@ public class fluentHcApi {
         return new String(encoded, StandardCharsets.UTF_8);
     }
 
-    public void verifyErrMsg (String errMsg) throws JSONException {
+    public void verifyErrMsg(String errMsg) throws JSONException {
         assertThat(errMsg).isEqualTo(this.reasonPhrase);
     }
 }
