@@ -46,7 +46,7 @@ It also hold four testRunner files two for the passing scenarios and two for the
 
  to run these runners from the command line, use the follwing command:
 
- **mvn test -Dtest=<Test Runner Name>**
+ **mvn test -Dtest=[Test Runner Name]**
 
    **Resources folder**
 
