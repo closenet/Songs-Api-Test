@@ -1,7 +1,9 @@
-Feature: the user should be able to create or use a video using the
-  api/video api
+@playlist
+Feature: As user who wants to organise his videos
+  I want to create, watch, update and delete my videos
+  so that I can enjoy manage my videos easily
 
-  @dev
+
   Scenario: create one playlist through the service
     Given endpoint path /playlist
     And using POST method
@@ -23,8 +25,6 @@ Feature: the user should be able to create or use a video using the
        """
     Then response status 201
 
-
-  @dev
   Scenario: request one playlist through the service
     Given endpoint path /playlist
     And using GET method
@@ -33,7 +33,7 @@ Feature: the user should be able to create or use a video using the
     And response body item list equal to some in get-playlist-all.json file
     And header content-type equals to applications
 
-  @dev @failing
+  @failing
   Scenario: request one playlist by ID through the service
     Given endpoint path /playlist/596cc4736ed7c10011a68b29
     And using GET method
@@ -43,7 +43,6 @@ Feature: the user should be able to create or use a video using the
     And header content-type equals to applications
 
 
-  @dev
   Scenario: request to update playlist by ID through the service
     Given endpoint path /playlist/596cc4736ed7c10011a68b29
     And using PATCH method
@@ -80,9 +79,8 @@ Feature: the user should be able to create or use a video using the
     And header content-type equals to applications
     And response body equal to Not Implemented message
 
-  @dev
   Scenario: request to delete a playlist by ID through the service
-    Given endpoint path /playlist/5aae5dae34bd6f011f99f9e7
+    Given endpoint path /playlist/5aaedf320e498a01a930dec7
     And using DELETE method
     When a service request is established
     Then response status 204
