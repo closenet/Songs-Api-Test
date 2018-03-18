@@ -43,7 +43,7 @@ Feature: As user who wants to organise his videos
     And header content-type equals to applications
 
 
-  Scenario: request to update playlist by ID through the service
+  Scenario: request to update to add playlist by IDs through the service
     Given endpoint path /playlist/596cc4736ed7c10011a68b29
     And using PATCH method
     And the body content will be the following
@@ -62,6 +62,9 @@ Feature: As user who wants to organise his videos
     When a service request is established
     Then response status 204
     And header content-type equals to applications
+
+  @failing
+  Scenario: request to update to remove playlist by IDs through the service
     Given endpoint path /playlist/5aadbf1834bd6f011f99f9df
     And using PATCH method
     And the body content will be the following
