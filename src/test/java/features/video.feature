@@ -26,12 +26,12 @@ Feature: the user should be able to create or use a video using the
     Then response status 201
 
   @dev
-  Scenario: request one video through the service
+  Scenario: request all videos through the service
     Given endpoint path /video
     And using GET method
     When a service request is established
     Then response status 200
-    And response body equal to get-video-all.json file
+    And response body item list equal to some in get-video-multiple.json file
     And header content-type equals to applications
 
   @dev
@@ -40,7 +40,7 @@ Feature: the user should be able to create or use a video using the
     And using GET method
     When a service request is established
     Then response status 200
-    And response body equal to get-video-byId.json file
+    And response body item equal to get-video-byId.json file
     And header content-type equals to applications
 
   @dev @failing
@@ -54,7 +54,7 @@ Feature: the user should be able to create or use a video using the
 
   @dev
   Scenario: request to delete video by ID through the service
-    Given endpoint path /video/5aadae6e0fe4ae00c532c512
+    Given endpoint path /video/5aadb9d034bd6f011f99f9dd
     And using DELETE method
     When a service request is established
     Then response status 204

@@ -1,15 +1,11 @@
 package stepDefs;
 
 import Utils.fluentHcApi;
-import cucumber.api.PendingException;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
-
-import java.io.IOException;
 
 
 public class commonSteps {
@@ -24,10 +20,7 @@ public class commonSteps {
 
     @And("^using (POST|GET|PATCH|DELETE) method$")
     public void aRequestSentToTheVideoEndpoint(String verb) throws Throwable {
-
         songsApi.setVerb(verb);
-        //  System.out.println("##################R###    " + resourceName);
-
     }
 
     @And("^the body content will be the following$")
@@ -35,22 +28,26 @@ public class commonSteps {
         songsApi.setBody(bodyContent);
     }
 
-
     @When("^a service request is established$")
     public void theServiceRequestIsEstablished() throws Throwable {
         songsApi.establishRequest();
     }
-
 
     @Then("^response status (\\d+)$")
     public void responseStatusEquals(int statusCode) throws Throwable {
         songsApi.verifyStatusCode(statusCode);
     }
 
-    @And("^response body equal to (.*\\.json) file$")
-    public void responseBodyEqualToJsonFile(String filename) throws Throwable {
-        songsApi.verifyFullBodyMsg(filename);
+    @And("^response body item list equal to some in (.*\\.json) file$")
+    public void responseBodyEqualToSomeJsonFile(String filename) throws Throwable {
+        songsApi.verifyPartOfBodyArray(filename);
     }
+
+    @And("^response body item equal to (.*\\.json) file$")
+    public void responseBodyEqualToJsonFile(String filename) throws Throwable {
+        songsApi.verifyExactBodyContent(filename);
+    }
+
     @And("^response body equal to (.*) message$")
     public void responseBodyEqualToMsg(String expectedMsg) throws Throwable {
         songsApi.verifyErrMsg(expectedMsg);
@@ -63,8 +60,6 @@ public class commonSteps {
 
     @And("^response body contains$")
     public void responseBodyContains(String jsonContent) throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        songsApi.verifyBodyMsg(jsonContent);
-
+        songsApi.verifyPartOfBodyContent(jsonContent);
     }
 }

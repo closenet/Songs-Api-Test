@@ -3,28 +3,18 @@ package Utils;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
-import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.ContentType;
 import org.apache.http.util.EntityUtils;
-import org.assertj.core.api.Assert;
-import org.assertj.core.util.VisibleForTesting;
-import org.json.JSONException;
-import org.json.simple.parser.ParseException;
-import org.skyscreamer.jsonassert.JSONAssert;
-
-import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Map;
-
+import static net.javacrumbs.jsonunit.core.Option.IGNORING_ARRAY_ORDER;
+import static net.javacrumbs.jsonunit.core.Option.IGNORING_EXTRA_ARRAY_ITEMS;
+import static net.javacrumbs.jsonunit.core.Option.IGNORING_EXTRA_FIELDS;
+import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class fluentHcApi {
@@ -47,16 +37,13 @@ public class fluentHcApi {
         this.response = Response;
     }
 
-
     public void setReasonPhrase(String ReasonPhrase) {
         this.reasonPhrase = ReasonPhrase;
     }
 
-
     public void setHeaderIt(HeaderIterator HeaderIt) {
         this.headerIt = HeaderIt;
     }
-
 
     public void setHeaderName(String HeaderName) {
         this.headerName = HeaderName;
@@ -65,7 +52,6 @@ public class fluentHcApi {
     public void setHeaderValue(String HeaderValue) {
         this.headerValue = HeaderValue;
     }
-
 
     public void setStatusCode(int StatusCode) {
         this.statusCode = StatusCode;
@@ -90,6 +76,7 @@ public class fluentHcApi {
     public void setContentType(String ContentType) {
         this.contentType = ContentType;
     }
+
 
 
     public HttpResponse baseRequest() throws IOException, HttpHostConnectException {
@@ -132,7 +119,6 @@ public class fluentHcApi {
     }
 
     public void establishRequest() throws HttpHostConnectException, Exception {
-
         try {
             setHttpResponse(this.baseRequest());
             if (this.response.getEntity() == null) {
@@ -153,7 +139,7 @@ public class fluentHcApi {
     }
 
 
-    public void verifyStatusCode(int status) throws IOException, JSONException {
+    public void verifyStatusCode(int status) throws IOException {
         assertThat(status).isEqualTo(this.statusCode);
     }
 
@@ -168,22 +154,27 @@ public class fluentHcApi {
         }
     }
 
-    public void verifyHeader(String HeaderName, String HeaderValue) throws IOException, JSONException {
+    public void verifyHeader(String HeaderName, String HeaderValue) throws IOException {
         this.setHeaderNameAndValue(HeaderName);
         assertThat(this.headerName).isEqualTo(headerName);
         assertThat(this.headerValue).isEqualTo(headerValue);
     }
 
-
-    public void verifyFullBodyMsg(String expectedFileName) throws IOException, JSONException, ParseException {
+    public void verifyPartOfBodyArray(String expectedFileName) throws IOException {
         String expected = this.readExpectedFile(expectedFileName);
         String actual = this.responseBody;
-        JSONAssert.assertEquals(expected, actual, false);
+        assertThatJson(actual).when(IGNORING_EXTRA_ARRAY_ITEMS,IGNORING_ARRAY_ORDER, IGNORING_EXTRA_FIELDS).isArray().thatContains(expected);
     }
 
-    public void verifyBodyMsg(String expectedJson) throws IOException, JSONException, ParseException {
+    public void verifyExactBodyContent(String expectedFileName) throws IOException {
+        String expected = this.readExpectedFile(expectedFileName);
         String actual = this.responseBody;
-        JSONAssert.assertEquals(expectedJson, actual, false);
+        assertThatJson(actual).when(IGNORING_ARRAY_ORDER).isEqualTo(expected);
+    }
+
+    public void verifyPartOfBodyContent(String expectedJson) throws IOException {
+        String actual = this.responseBody;
+        assertThatJson(actual).when(IGNORING_ARRAY_ORDER, IGNORING_EXTRA_FIELDS).isEqualTo(expectedJson);
     }
 
     static String readExpectedFile(String expectedResponseFile) throws IOException {
@@ -191,7 +182,7 @@ public class fluentHcApi {
         return new String(encoded, StandardCharsets.UTF_8);
     }
 
-    public void verifyErrMsg(String errMsg) throws JSONException {
+    public void verifyErrMsg(String errMsg) throws Exception {
         assertThat(errMsg).isEqualTo(this.reasonPhrase);
     }
 }
