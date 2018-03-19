@@ -25,6 +25,7 @@
 
 
 **`what has been created?`**
+
 I have created four folders which each got special purpose:
 
 
@@ -50,7 +51,6 @@ It also hold four testRunner files two for the passing scenarios and two for the
  **mvn test -Dtest=[Test Runner Name]**
 
 **`Resources folder`**
-
  These are json files that will be used when asserting on the returned responses
 
 
