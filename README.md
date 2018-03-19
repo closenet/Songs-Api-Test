@@ -25,7 +25,8 @@
 
 
 **`what has been created?`**
-I have created four folders which each got special purpose
+I have created four folders which each got special purpose:
+-----------------------------------------------------------
 
 **`Feature folder`**
 There are two feature files created for the songs APIs to cover the two feature areas
@@ -48,7 +49,7 @@ It also hold four testRunner files two for the passing scenarios and two for the
 
  **mvn test -Dtest=[Test Runner Name]**
 
-   **Resources folder**
+**`Resources folder`**
 
  These are json files that will be used when asserting on the returned responses
 
